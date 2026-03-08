@@ -1,1 +1,243 @@
-<h1>Hi</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Pipeline Simulator</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent: #22c55e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(to right, #818cf8, #fb7185); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #334155;
+        }
+
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #2d3748;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+            opacity: 0.5;
+            transition: 0.3s;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: scale(1.02);
+            border-left-color: var(--accent);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover { background: #4f46e5; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+
+        .vector-space {
+            height: 150px;
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            transition: 0.5s;
+        }
+
+        .log {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            height: 100px;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .highlight { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>RAG Pipeline Simulator</h1>
+        <p>Follow the steps to see how LLMs use external data to answer questions.</p>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Phase 1: Ingestion</h2>
+            
+            <div id="step1" class="step active">
+                <strong>1. Load Documents</strong>
+                <p>Private data: "The company's secret code is 8822. The CEO is Alice."</p>
+                <button onclick="startIngestion()">Process Documents</button>
+            </div>
+
+            <div id="step2" class="step">
+                <strong>2. Chunking & Embedding</strong>
+                <p>Splitting text into pieces and converting them into math (vectors).</p>
+                <div class="vector-space" id="vectorSpace"></div>
+            </div>
+
+            <div id="step3" class="step">
+                <strong>3. Vector Database</strong>
+                <p>Data is now indexed and ready for fast searching.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Phase 2: Inference</h2>
+            
+            <div id="step4" class="step">
+                <strong>4. User Query</strong>
+                <input type="text" id="userQuery" value="What is the secret code?" style="width:90%; padding:8px; border-radius:4px; border:none; margin-top:5px;">
+                <button id="askBtn" onclick="startInference()" disabled>Ask Question</button>
+            </div>
+
+            <div id="step5" class="step">
+                <strong>5. Retrieval (Semantic Search)</strong>
+                <p>Finding the most relevant "chunks" from the database.</p>
+            </div>
+
+            <div id="step6" class="step">
+                <strong>6. Augmentation & Generation</strong>
+                <p>Prompt + Context sent to LLM.</p>
+                <div id="finalOutput" class="log">Waiting for query...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const logs = document.getElementById('finalOutput');
+    const vectorSpace = document.getElementById('vectorSpace');
+    
+    function logMessage(msg) {
+        const div = document.createElement('div');
+        div.innerHTML = `> ${msg}`;
+        logs.appendChild(div);
+        logs.scrollTop = logs.scrollHeight;
+    }
+
+    async function startIngestion() {
+        // Step 1 -> 2
+        document.getElementById('step1').classList.remove('active');
+        const s2 = document.getElementById('step2');
+        s2.classList.add('active');
+        
+        logMessage("Chunking document...");
+        
+        // Simulate Vector Creation
+        for(let i=0; i<15; i++) {
+            await new Promise(r => setTimeout(r, 100));
+            let dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = Math.random() * 90 + '%';
+            dot.style.top = Math.random() * 90 + '%';
+            vectorSpace.appendChild(dot);
+        }
+
+        // Step 2 -> 3
+        s2.classList.remove('active');
+        document.getElementById('step3').classList.add('active');
+        logMessage("Vectors stored in database.");
+        
+        document.getElementById('askBtn').disabled = false;
+        document.getElementById('step4').classList.add('active');
+    }
+
+    async function startInference() {
+        const query = document.getElementById('userQuery').value;
+        logMessage(`Query received: "${query}"`);
+
+        // Step 4 -> 5
+        document.getElementById('step4').classList.remove('active');
+        const s5 = document.getElementById('step5');
+        s5.classList.add('active');
+        
+        logMessage("Converting query to vector...");
+        await new Promise(r => setTimeout(r, 800));
+        
+        logMessage("Searching vector space for matches...");
+        // Visual cue: highlight a dot
+        const dots = document.querySelectorAll('.dot');
+        dots[Math.floor(Math.random()*dots.length)].style.background = '#22c55e';
+        dots[Math.floor(Math.random()*dots.length)].style.boxShadow = '0 0 10px #22c55e';
+
+        // Step 5 -> 6
+        await new Promise(r => setTimeout(r, 800));
+        s5.classList.remove('active');
+        document.getElementById('step6').classList.add('active');
+        
+        logMessage("Constructing Prompt with Context...");
+        await new Promise(r => setTimeout(r, 1000));
+        
+        const finalAnswer = "Based on the provided documents, the secret code is <span class='highlight'>8822</span>.";
+        logMessage("<strong>LLM Response:</strong> " + finalAnswer);
+    }
+</script>
+
+</body>
+</html>
