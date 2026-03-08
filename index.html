@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive RAG Simulator</title>
+    <title>Century RAG Simulator</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -13,10 +13,12 @@
             --text: #f8fafc;
             --accent: #22c55e;
             --border: #334155;
+            /* Font Update */
+            --font-main: "Century Gothic", "AppleGothic", "Futura", sans-serif;
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: var(--font-main);
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -27,10 +29,17 @@
             padding: 20px;
         }
 
-        .container { max-width: 1100px; width: 100%; }
+        .container { max-width: 1200px; width: 100%; }
 
         header { text-align: center; margin-bottom: 30px; }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(to right, #818cf8, #fb7185); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h1 { 
+            font-size: 3rem; 
+            margin-bottom: 10px; 
+            font-weight: 100;
+            background: linear-gradient(to right, #818cf8, #fb7185); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
 
@@ -42,7 +51,15 @@
             border: 1px solid var(--border);
         }
 
-        h2 { color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        h2 { 
+            color: #94a3b8; 
+            font-size: 0.8rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+        }
 
         .step {
             margin-bottom: 20px;
@@ -59,8 +76,6 @@
             transform: translateX(5px);
         }
 
-        .step.completed { border-left-color: var(--accent); }
-
         textarea, input[type="text"] {
             width: 100%;
             background: #0f172a;
@@ -70,12 +85,7 @@
             border-radius: 8px;
             margin: 10px 0;
             box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .file-input-wrapper {
-            margin: 10px 0;
-            font-size: 0.8rem;
+            font-family: var(--font-main);
         }
 
         button {
@@ -85,13 +95,16 @@
             padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
+            font-family: var(--font-main);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             transition: 0.2s;
             width: 100%;
         }
 
-        button:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); }
-        button:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+        button:hover:not(:disabled) { background: #4f46e5; filter: brightness(1.1); }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .vector-space {
             height: 120px;
@@ -100,76 +113,167 @@
             position: relative;
             overflow: hidden;
             margin-top: 10px;
-            border: 1px solid var(--border);
         }
 
         .dot {
             position: absolute;
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             background: var(--secondary);
             border-radius: 50%;
             transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .log-container {
-            font-family: 'Fira Code', monospace;
-            font-size: 0.8rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
             background: #000;
             padding: 15px;
             border-radius: 12px;
-            height: 180px;
+            height: 150px;
             overflow-y: auto;
             border: 1px solid var(--border);
         }
 
-        .log-entry { margin-bottom: 5px; border-left: 2px solid #334155; padding-left: 8px; }
-        .highlight { color: var(--accent); font-weight: bold; }
-        .chunk-tag { display: inline-block; padding: 2px 6px; background: var(--primary); border-radius: 4px; font-size: 0.7rem; margin: 2px; }
+        .prompt-box {
+            background: #0f172a;
+            border: 1px dashed var(--primary);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #818cf8;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            display: none;
+        }
 
+        .highlight { color: var(--accent); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>RAG Pipeline Simulator</h1>
-        <p>Upload a document or paste text to see how Retrieval-Augmented Generation works.</p>
+        <h1>RAG SIMULATOR</h1>
+        <p>A minimalist visualization of Retrieval-Augmented Generation.</p>
     </header>
 
     <div class="grid">
         <div class="card">
-            <h2>Phase 1: Ingestion (Data Prep)</h2>
+            <h2>Phase 1: Ingestion</h2>
             
             <div id="step1" class="step active">
-                <strong>1. Input Knowledge Base</strong>
-                <textarea id="docInput" rows="4" placeholder="Paste your custom data here (e.g., 'The office password is BlueSky-2024. The lunch break starts at 1:00 PM.')"></textarea>
-                <div class="file-input-wrapper">
-                    Or upload .txt file: <input type="file" id="fileLoad" accept=".txt">
-                </div>
-                <button id="ingestBtn" onclick="startIngestion()">Embed Knowledge</button>
+                <strong>1. Load Custom Knowledge</strong>
+                <textarea id="docInput" rows="4" placeholder="Paste your data here..."></textarea>
+                <button id="ingestBtn" onclick="startIngestion()">Build Vector Index</button>
             </div>
 
             <div id="step2" class="step">
-                <strong>2. Chunking & Vectorizing</strong>
-                <p id="chunkStatus" style="font-size: 0.8rem;">Ready to process...</p>
+                <strong>2. Embedding & Chunks</strong>
                 <div class="vector-space" id="vectorSpace"></div>
             </div>
 
             <div id="step3" class="step">
-                <strong>3. Vector Database Indexing</strong>
-                <p style="font-size: 0.8rem;">Data is mathematically indexed for search.</p>
+                <strong>3. Storage Status</strong>
+                <p id="storageStatus">Ready for queries.</p>
             </div>
         </div>
 
         <div class="card">
-            <h2>Phase 2: Inference (Answering)</h2>
+            <h2>Phase 2: Inference</h2>
             
             <div id="step4" class="step">
                 <strong>4. User Query</strong>
-                <input type="text" id="userQuery" placeholder="Ask something about your data..." disabled>
+                <input type="text" id="userQuery" placeholder="Ask a question..." disabled>
                 <button id="askBtn" onclick="startInference()" disabled>Retrieve & Generate</button>
             </div>
 
             <div id="step5" class="step">
-                <strong>5. Semantic Retrieval
+                <strong>5. Augmented Prompt (The "R" and "A" in RAG)</strong>
+                <div id="promptPreview" class="prompt-box"></div>
+            </div>
+
+            <div id="step6" class="step">
+                <strong>6. LLM Generation</strong>
+                <div id="finalOutput" class="log-container">
+                    <div style="color: #475569;">System idle...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chunks = [];
+    const logs = document.getElementById('finalOutput');
+    const vectorSpace = document.getElementById('vectorSpace');
+    const promptPreview = document.getElementById('promptPreview');
+
+    function logMessage(msg) {
+        const div = document.createElement('div');
+        div.style.marginBottom = "5px";
+        div.innerHTML = `> ${msg}`;
+        logs.appendChild(div);
+        logs.scrollTop = logs.scrollHeight;
+    }
+
+    async function startIngestion() {
+        const text = document.getElementById('docInput').value;
+        if (!text.trim()) return;
+
+        document.getElementById('ingestBtn').disabled = true;
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+
+        chunks = text.split(/[.!?]+/).filter(c => c.trim().length > 5);
+        vectorSpace.innerHTML = '';
+        
+        for(let i=0; i < chunks.length; i++) {
+            await new Promise(r => setTimeout(r, 100));
+            let dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = Math.random() * 90 + '%';
+            dot.style.top = Math.random() * 90 + '%';
+            vectorSpace.appendChild(dot);
+        }
+
+        logMessage(`Indexed ${chunks.length} chunks into vector space.`);
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step3').classList.add('active');
+        
+        document.getElementById('userQuery').disabled = false;
+        document.getElementById('askBtn').disabled = false;
+        document.getElementById('step4').classList.add('active');
+    }
+
+    async function startInference() {
+        const query = document.getElementById('userQuery').value;
+        if(!query) return;
+
+        logMessage("Searching for similarity match...");
+        document.getElementById('step4').classList.remove('active');
+        
+        // Simulate Retrieval
+        await new Promise(r => setTimeout(r, 600));
+        const bestIdx = Math.floor(Math.random() * chunks.length);
+        const context = chunks[bestIdx].trim();
+
+        // Show Retrieval in Vector Space
+        const dots = document.querySelectorAll('.dot');
+        dots[bestIdx].style.background = 'var(--accent)';
+        dots[bestIdx].style.transform = 'scale(2)';
+
+        // Show Augmented Prompt
+        document.getElementById('step5').classList.add('active');
+        promptPreview.style.display = 'block';
+        promptPreview.innerText = `[SYSTEM]: You are a helpful assistant. Use the context below to answer.\n\n[CONTEXT]: ${context}\n\n[USER]: ${query}`;
+
+        // Final Output
+        await new Promise(r => setTimeout(r, 1000));
+        document.getElementById('step6').classList.add('active');
+        logMessage(`<span class="highlight">Response:</span> Based on your data, I found that "${context}."`);
+    }
+</script>
+
+</body>
+</html>
